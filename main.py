@@ -10,8 +10,10 @@ import child
 import data
 import backend
 from controller import Agent
-from config import ARCH_SPACE, QUAN_SPACE
+from config import ARCH_SPACE, QUAN_SPACE, CLOCK_FREQUENCY
 from utility import BestSamples
+from fpga.model import FPGAModel
+import utility
 
 
 # def get_args():
@@ -33,6 +35,16 @@ parser.add_argument(
     default=6,
     help="the number of child network layers, default is 6"
     )
+parser.add_argument(
+    '-rl', '--rLUT',
+    type=int,
+    default=1e5,
+    help="the maximum number of LUTs allowed, default is 10000")
+parser.add_argument(
+    '-rt', '--rThroughput',
+    type=float,
+    default=1000,
+    help="the minumum throughput to be achieved, default is 1000")
 parser.add_argument(
     '-e', '--epochs',
     type=int,
@@ -131,6 +143,7 @@ def main():
     print(f"using device {device}")
     dir = os.path.join(
         f'experiment',
+        args.mode,
         'non_linear' if args.skip else 'linear',
         ('with' if args.stride else 'without') + ' stride, ' +
         ('with' if args.pooling else 'without') + ' pooling',
@@ -183,7 +196,7 @@ def nas(device, dir='experiment'):
                     arch_id, arch_rollout))
         model, optimizer = child.get_model(
             input_shape, arch_paras, num_classes, device,
-            multi_gpu=args.multi_gpu, do_bn=False)
+            multi_gpu=args.multi_gpu, do_bn=True)
         _, arch_reward = backend.fit(
             model, optimizer, train_data, val_data,
             epochs=args.epochs, verbosity=args.verbosity)
@@ -210,8 +223,98 @@ def nas(device, dir='experiment'):
     csvfile.close()
 
 
+def joint_search(device, dir='experiment'):
+    dir = os.path.join(
+        dir, f"rLut={args.rLUT}, rThroughput={args.rThroughput}")
+    if os.path.exists(dir) is False:
+        os.makedirs(dir)
+    filepath = os.path.join(dir, f"joint ({args.episodes} episodes)")
+    logger = get_logger(filepath)
+    csvfile = open(filepath+'.csv', mode='w+', newline='')
+    writer = csv.writer(csvfile)
+    logger.info(f"INFORMATION")
+    logger.info(f"mode: \t\t\t\t\t {'joint'}")
+    logger.info(f"dataset: \t\t\t\t {args.dataset}")
+    logger.info(f"number of child network layers: \t {args.layers}")
+    logger.info(f"include stride: \t\t\t {args.stride}")
+    logger.info(f"include pooling: \t\t\t {args.pooling}")
+    logger.info(f"skip connection: \t\t\t {args.skip}")
+    logger.info(f"required # LUTs: \t\t\t {args.rLUT}")
+    logger.info(f"required throughput: \t\t\t {args.rThroughput}")
+    logger.info(f"Assumed frequency: \t\t\t {CLOCK_FREQUENCY}")
+    logger.info(f"training epochs: \t\t\t {args.epochs}")
+    logger.info(f"data augmentation: \t\t\t {args.augment}")
+    logger.info(f"batch size: \t\t\t\t {args.batch_size}")
+    logger.info(f"architecture episodes: \t\t\t {args.episodes}")
+    logger.info(f"using multi gpus: \t\t\t {args.multi_gpu}")
+    logger.info(f"architecture space: ")
+    for name, value in ARCH_SPACE.items():
+        logger.info(name + f": \t\t\t\t {value}")
+    for name, value in QUAN_SPACE.items():
+        logger.info(name + f": \t\t\t {value}")
+    agent = Agent({**ARCH_SPACE, **QUAN_SPACE}, args.layers, args.batch_size,
+                  device=torch.device('cpu'), skip=args.skip)
+    train_data, val_data = data.get_data(
+        args.dataset, device, shuffle=True,
+        batch_size=args.batch_size, augment=args.augment)
+    input_shape, num_classes = data.get_info(args.dataset)
+    writer.writerow(["ID"] +
+                    ["Layer {}".format(i) for i in range(args.layers)] +
+                    ["Accuracy"] +
+                    ["Partition (Tn, Tm)", "Partition (#LUTs)",
+                    "Partition (#cycles)", "Total LUT", "Total Throughput"] +
+                    ["Time"])
+    child_id, total_time = 0, 0
+    logger.info('=' * 50 +
+                "Start exploring architecture & quantization space" + '=' * 50)
+    best_samples = BestSamples(5)
+    for e in range(args.episodes):
+        logger.info('-' * 130)
+        child_id += 1
+        start = time.time()
+        rollout, paras = agent.rollout()
+        logger.info("Sample Architecture ID: {}, Sampled actions: {}".format(
+                    child_id, rollout))
+        arch_paras, quan_paras = utility.split_paras(paras)
+        fpga_model = FPGAModel(rLUT=args.rLUT, rThroughput=args.rThroughput,
+                               arch_paras=arch_paras, quan_paras=quan_paras)
+        if fpga_model.validate():
+            model, optimizer = child.get_model(
+                input_shape, arch_paras, num_classes, device,
+                multi_gpu=args.multi_gpu, do_bn=False)
+            _, reward = backend.fit(
+                model, optimizer, train_data, val_data, quan_paras=quan_paras,
+                epochs=args.epochs, verbosity=args.verbosity)
+        else:
+            reward = 0
+        agent.store_rollout(rollout, reward)
+        end = time.time()
+        ep_time = end - start
+        total_time += ep_time
+        best_samples.register(child_id, rollout, reward)
+        writer.writerow(
+            [child_id] +
+            [str(paras[i]) for i in range(args.layers)] +
+            [reward] + list(fpga_model.get_info()) + [ep_time]
+            )
+        logger.info(f"Reward: {reward}, " +
+                    f"Elasped time: {ep_time}, " +
+                    f"Average time: {total_time/(e+1)}")
+        logger.info(f"Best Reward: {best_samples.reward_list[0]}, " +
+                    f"ID: {best_samples.id_list[0]}, " +
+                    f"Rollout: {best_samples.rollout_list[0]}")
+    logger.info(
+        '=' * 50 +
+        "Architecture & quantization sapce exploration finished" +
+        '=' * 50)
+    logger.info(f"Total elasped time: {total_time}")
+    logger.info(f"Best samples: {best_samples}")
+    csvfile.close()
+
+
 SCRIPT = {
-    'nas': nas
+    'nas': nas,
+    'joint': joint_search
 }
 
 if __name__ == '__main__':

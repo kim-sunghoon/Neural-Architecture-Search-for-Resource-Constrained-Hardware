@@ -252,7 +252,8 @@ class CNN(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         x = F.relu(x)
-        x = self.fc_bn(x)
+        if self.do_bn is True:
+            x = self.fc_bn(x)
         x = nn.Dropout(p=0.5)(x)
         x = self.fc2(x)
         return x

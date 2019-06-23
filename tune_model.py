@@ -8,6 +8,7 @@ import backend
 import model_to_tune
 import time
 import math
+import csv
 
 parser = argparse.ArgumentParser('Parser User Input Arguments')
 parser.add_argument(
@@ -41,12 +42,13 @@ parser.add_argument(
     '-bs', '--batch_size',
     type=int,
     default=64,
-    help="number of epochs, default is 150"
+    help="batch_size, default is 64"
     )
 parser.add_argument(
     '-d', '--dataset',
     default='CIFAR10',
-    help="supported dataset including : 1. MNIST, 2. CIFAR10 (default)"
+    help="""supported dataset including : 1. MNIST, 2. CIFAR10 (default),
+            3. ImageNet"""
     )
 args = parser.parse_args()
 
@@ -94,7 +96,7 @@ def tune(paras=[], dataset='CIFAR10'):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     train_data, val_data = data.get_data(
         name=dataset, device=device,
-        shuffle=True, batch_size=args.batch_size, augment=True)
+        shuffle=True, batch_size=args.batch_size, augment=args.augment)
     model, _ = get_model(
         input_shape, arch_paras, num_classes,
         device=device,
@@ -103,6 +105,9 @@ def tune(paras=[], dataset='CIFAR10'):
     optimizer, lr_schedule = get_optimizer(args.optimizer, model)
     best_acc = 0
     best_quan_acc = 0
+    cvsfile = open('tune.csv', mode='w+', newline='')
+    writer = csv.writer(cvsfile)
+    writer.writerow(['Epoch', 'train acc', 'val acc', 'quan acc'])
     for epoch in range(1, args.epochs+1):
         # print('before training ', model.conv_1.bias, model.conv_2.bias)
         epoch_lr = lr_schedule(optimizer, epoch)
@@ -174,17 +179,18 @@ def tune(paras=[], dataset='CIFAR10'):
                     running_correction += batch_correction
                     num_batches += 1
                     running_total += input_batch.size(0)
-                    val_acc = running_correction / running_total
-                    val_loss = running_loss / running_total
+                    quan_acc = running_correction / running_total
+                    quan_loss = running_loss / running_total
                     epoch_percentage = num_batches / len(val_data)
                 print('|' + '='*(math.ceil(bar_width * epoch_percentage)-1) +
                       '>' + ' '*(bar_width - math.ceil(
                         bar_width * epoch_percentage)) +
                       '|' + f"{epoch_percentage:4.1%}-{end-start:4.2f}s" +
-                      f"\t loss: {val_loss:.5}, acc: {val_acc:6.3%}  ",
+                      f"\t loss: {quan_loss:.5}, acc: {quan_acc:6.3%}  ",
                       end=('\r' if epoch_percentage < 1 else '\n'))
-            if val_acc > best_quan_acc:
-                best_quan_acc = val_acc
+            if quan_acc > best_quan_acc:
+                best_quan_acc = quan_acc
+        writer.writerow([str(epoch), train_acc, val_acc, quan_acc])
 
 
 def get_optimizer(type, model):
