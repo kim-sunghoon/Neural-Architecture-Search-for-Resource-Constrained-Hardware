@@ -1,0 +1,22 @@
+INFORMATION
+mode: 					 nas
+dataset: 				 CIFAR10
+number of child network layers: 	 6
+include stride: 			 True
+include pooling: 			 True
+skip connection: 			 True
+training epochs: 			 30
+data augmentation: 			 False
+batch size: 				 128
+architecture episodes: 			 1000
+using multi gpus: 			 False
+architecture space: 
+filter_height: 				 (1, 3, 5, 7)
+filter_width: 				 (1, 3, 5, 7)
+stride_height: 				 (1, 2, 3)
+stride_width: 				 (1, 2, 3)
+num_filters: 				 (24, 36, 48, 64)
+pool_size: 				 (1, 2)
+==================================================Start exploring architecture space==================================================
+----------------------------------
+Sample Architecture ID: 1, Sampled actions: [[], 3, 2, 2, 1, 0, 1, [1], 3, 2, 1, 0, 1, 1, [0, 0], 1, 2, 1, 0, 0, 1, [1, 1, 1], 3, 3, 1, 2, 3, 0, [0, 0, 1, 1], 3, 2, 2, 0, 1, 1, [0, 1, 0, 1, 1], 2, 0, 0, 2, 3, 1]

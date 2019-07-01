@@ -97,7 +97,7 @@ parser.add_argument(
     help="augment training data"
     )
 parser.add_argument(
-    '-m', '--multi_gpu',
+    '-m', '--multi-gpu',
     action='store_true',
     help="use all gpus available, default false"
     )
@@ -250,6 +250,7 @@ def joint_search(device, dir='experiment'):
     logger.info(f"architecture space: ")
     for name, value in ARCH_SPACE.items():
         logger.info(name + f": \t\t\t\t {value}")
+    logger.info(f"quantization space: ")
     for name, value in QUAN_SPACE.items():
         logger.info(name + f": \t\t\t {value}")
     agent = Agent({**ARCH_SPACE, **QUAN_SPACE}, args.layers, args.batch_size,
@@ -292,11 +293,108 @@ def joint_search(device, dir='experiment'):
         ep_time = end - start
         total_time += ep_time
         best_samples.register(child_id, rollout, reward)
-        writer.writerow(
-            [child_id] +
-            [str(paras[i]) for i in range(args.layers)] +
-            [reward] + list(fpga_model.get_info()) + [ep_time]
-            )
+        if reward > 0:
+            writer.writerow(
+                [child_id] +
+                [str(paras[i]) for i in range(args.layers)] +
+                [reward] + list(fpga_model.get_info()) + [ep_time]
+                )
+        logger.info(f"Reward: {reward}, " +
+                    f"Elasped time: {ep_time}, " +
+                    f"Average time: {total_time/(e+1)}")
+        logger.info(f"Best Reward: {best_samples.reward_list[0]}, " +
+                    f"ID: {best_samples.id_list[0]}, " +
+                    f"Rollout: {best_samples.rollout_list[0]}")
+    logger.info(
+        '=' * 50 +
+        "Architecture & quantization sapce exploration finished" +
+        '=' * 50)
+    logger.info(f"Total elasped time: {total_time}")
+    logger.info(f"Best samples: {best_samples}")
+    csvfile.close()
+
+
+def sync_search(device, dir='experiment'):
+    dir = os.path.join(
+        dir, f"rLut={args.rLUT}, rThroughput={args.rThroughput}")
+    if os.path.exists(dir) is False:
+        os.makedirs(dir)
+    filepath = os.path.join(dir, f"joint ({args.episodes} episodes)")
+    logger = get_logger(filepath)
+    csvfile = open(filepath+'.csv', mode='w+', newline='')
+    writer = csv.writer(csvfile)
+    logger.info(f"INFORMATION")
+    logger.info(f"mode: \t\t\t\t\t {'sync'}")
+    logger.info(f"dataset: \t\t\t\t {args.dataset}")
+    logger.info(f"number of child network layers: \t {args.layers}")
+    logger.info(f"include stride: \t\t\t {args.stride}")
+    logger.info(f"include pooling: \t\t\t {args.pooling}")
+    logger.info(f"skip connection: \t\t\t {args.skip}")
+    logger.info(f"required # LUTs: \t\t\t {args.rLUT}")
+    logger.info(f"required throughput: \t\t\t {args.rThroughput}")
+    logger.info(f"Assumed frequency: \t\t\t {CLOCK_FREQUENCY}")
+    logger.info(f"training epochs: \t\t\t {args.epochs}")
+    logger.info(f"data augmentation: \t\t\t {args.augment}")
+    logger.info(f"batch size: \t\t\t\t {args.batch_size}")
+    logger.info(f"architecture episodes: \t\t\t {args.episodes}")
+    logger.info(f"using multi gpus: \t\t\t {args.multi_gpu}")
+    logger.info(f"architecture space: ")
+    for name, value in ARCH_SPACE.items():
+        logger.info(name + f": \t\t\t\t {value}")
+    logger.info(f"quantization space: ")
+    for name, value in QUAN_SPACE.items():
+        logger.info(name + f": \t\t\t {value}")
+    arch_agent = Agent(ARCH_SPACE, args.layers, args.batch_size,
+                       device=torch.device('cpu'), skip=args.skip)
+    quan_agent = Agent(QUAN_SPACE, args.layers, args.batch_size,
+                       device=torch.device('cpu'), skip=args.skip)
+    train_data, val_data = data.get_data(
+        args.dataset, device, shuffle=True,
+        batch_size=args.batch_size, augment=args.augment)
+    input_shape, num_classes = data.get_info(args.dataset)
+    writer.writerow(["ID"] +
+                    ["Layer {}".format(i) for i in range(args.layers)] +
+                    ["Accuracy"] +
+                    ["Partition (Tn, Tm)", "Partition (#LUTs)",
+                    "Partition (#cycles)", "Total LUT", "Total Throughput"] +
+                    ["Time"])
+    child_id, total_time = 0, 0
+    logger.info('=' * 50 +
+                "Start exploring architecture & quantization space" + '=' * 50)
+    best_samples = BestSamples(5)
+    for e in range(args.episodes):
+        logger.info('-' * 130)
+        child_id += 1
+        start = time.time()
+        arch_rollout, arch_paras = arch_agent.rollout()
+        quan_rollout, quan_paras = quan_agent.rollout()
+        logger.info("Sample Child ID: {}, Sampled arch: {}, Sampled quan: {}".format(child_id, arch_rollout, quan_rollout))
+        fpga_model = FPGAModel(rLUT=args.rLUT, rThroughput=args.rThroughput,
+                               arch_paras=arch_paras, quan_paras=quan_paras)
+        if fpga_model.validate():
+            model, optimizer = child.get_model(
+                input_shape, arch_paras, num_classes, device,
+                multi_gpu=args.multi_gpu, do_bn=False)
+            _, reward = backend.fit(
+                model, optimizer, train_data, val_data, quan_paras=quan_paras,
+                epochs=args.epochs, verbosity=args.verbosity)
+        else:
+            reward = 0
+        arch_agent.store_rollout(arch_rollout, reward)
+        quan_agent.store_rollout(quan_rollout, reward)
+        end = time.time()
+        ep_time = end - start
+        total_time += ep_time
+        best_samples.register(
+            child_id, utility.combine_rollout(
+                arch_rollout, quan_rollout, args.layers), reward)
+        if reward > 0:
+            writer.writerow(
+                [child_id] +
+                [str(arch_paras[i]) + '\n' + str(quan_paras[i])
+                 for i in range(args.layers)] +
+                [reward] + list(fpga_model.get_info()) + [ep_time]
+                )
         logger.info(f"Reward: {reward}, " +
                     f"Elasped time: {ep_time}, " +
                     f"Average time: {total_time/(e+1)}")
@@ -314,7 +412,8 @@ def joint_search(device, dir='experiment'):
 
 SCRIPT = {
     'nas': nas,
-    'joint': joint_search
+    'joint': joint_search,
+    'sync': sync_search
 }
 
 if __name__ == '__main__':

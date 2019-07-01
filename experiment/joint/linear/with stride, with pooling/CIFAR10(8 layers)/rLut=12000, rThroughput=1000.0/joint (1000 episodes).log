@@ -1,0 +1,33 @@
+INFORMATION
+mode: 					 joint
+dataset: 				 CIFAR10
+number of child network layers: 	 8
+include stride: 			 True
+include pooling: 			 True
+skip connection: 			 False
+required # LUTs: 			 12000
+required throughput: 			 1000.0
+Assumed frequency: 			 100000000.0
+training epochs: 			 30
+data augmentation: 			 False
+batch size: 				 128
+architecture episodes: 			 1000
+using multi gpus: 			 False
+architecture space: 
+filter_height: 				 (1, 3, 5, 7)
+filter_width: 				 (1, 3, 5, 7)
+stride_height: 				 (1, 2, 3)
+stride_width: 				 (1, 2, 3)
+num_filters: 				 (24, 36, 48, 64)
+pool_size: 				 (1, 2)
+act_num_int_bits: 			 (0, 1, 2, 3)
+act_num_frac_bits: 			 (0, 1, 2, 3, 4, 5, 6)
+weight_num_int_bits: 			 (0, 1, 2, 3)
+weight_num_frac_bits: 			 (0, 1, 2, 3, 4, 5, 6)
+==================================================Start exploring architecture & quantization space==================================================
+----------------------------------------------------------------------------------------------------------------------------------
+Sample Architecture ID: 1, Sampled actions: [2, 2, 2, 0, 1, 0, 2, 4, 1, 1, 2, 0, 1, 1, 3, 0, 2, 4, 2, 5, 1, 1, 0, 2, 0, 1, 2, 5, 1, 6, 2, 1, 1, 1, 2, 0, 1, 5, 3, 0, 1, 1, 1, 0, 1, 0, 2, 4, 0, 2, 1, 3, 0, 0, 2, 1, 1, 1, 1, 2, 3, 0, 0, 2, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1, 1, 0, 1, 0, 3, 0]
+Reward: 0, Elasped time: 0.23427224159240723, Average time: 0.23427224159240723
+Best Reward: 0, ID: 1, Rollout: [2, 2, 2, 0, 1, 0, 2, 4, 1, 1, 2, 0, 1, 1, 3, 0, 2, 4, 2, 5, 1, 1, 0, 2, 0, 1, 2, 5, 1, 6, 2, 1, 1, 1, 2, 0, 1, 5, 3, 0, 1, 1, 1, 0, 1, 0, 2, 4, 0, 2, 1, 3, 0, 0, 2, 1, 1, 1, 1, 2, 3, 0, 0, 2, 1, 1, 1, 0, 1, 2, 1, 1, 1, 1, 1, 0, 1, 0, 3, 0]
+----------------------------------------------------------------------------------------------------------------------------------
+Sample Architecture ID: 2, Sampled actions: [0, 0, 1, 0, 1, 1, 0, 5, 1, 6, 1, 3, 0, 1, 0, 0, 1, 3, 1, 3, 2, 2, 0, 1, 1, 0, 3, 6, 1, 6, 1, 3, 1, 2, 2, 0, 2, 6, 0, 0, 0, 2, 2, 2, 2, 0, 3, 5, 1, 3, 1, 0, 0, 2, 0, 0, 2, 1, 1, 6, 2, 0, 0, 1, 1, 0, 1, 5, 3, 1, 3, 0, 1, 0, 3, 1, 1, 5, 2, 3]

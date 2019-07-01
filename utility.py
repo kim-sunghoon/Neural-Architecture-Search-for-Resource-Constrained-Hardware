@@ -44,6 +44,18 @@ def split_paras(paras):
     return arch_paras, quan_paras
 
 
+def combine_rollout(arch_rollout, quan_rollout, num_layers):
+    arch_num_paras_per_layer = len(arch_rollout) / num_layers
+    quan_num_paras_per_layer = len(quan_rollout) / num_layers
+    result = []
+    for i in range(num_layers):
+        result += arch_rollout[i * arch_num_paras_per_layer:
+                               arch_num_paras_per_layer * (i + 1)]
+        result += quan_rollout[i * quan_num_paras_per_layer:
+                               quan_num_paras_per_layer * (i + 1)]
+    return result
+
+
 class BestSamples(object):
     def __init__(self, length=5):
         self.length = length

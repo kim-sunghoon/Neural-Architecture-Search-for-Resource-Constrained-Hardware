@@ -165,6 +165,7 @@ def tune(paras=[], dataset='CIFAR10'):
                   end=('\r' if epoch_percentage < 1 else '\n'))
         if val_acc > best_acc:
             best_acc = val_acc
+        quan_acc = 'N/A'
         if quan_paras is not None:
             print("Start evaluating with quantization ...")
             running_loss, running_correction, num_batches = 0, 0, 0
@@ -191,6 +192,8 @@ def tune(paras=[], dataset='CIFAR10'):
             if quan_acc > best_quan_acc:
                 best_quan_acc = quan_acc
         writer.writerow([str(epoch), train_acc, val_acc, quan_acc])
+    print(f"Finished tuning ... final accuracy: {best_acc:6.3%}, " +
+          f"quantized accuracy :{best_quan_acc:6.3%}")
 
 
 def get_optimizer(type, model):

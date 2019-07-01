@@ -26,6 +26,7 @@ class Cell():
         self.pool = None
         self.drop = None
         self.bn = None
+        self.para_num = 0
 
     def __repr__(self):
         return f"id: {self.id} " + \
