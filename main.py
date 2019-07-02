@@ -59,19 +59,19 @@ parser.add_argument(
         is 1000'''
     )
 parser.add_argument(
-    '-st', '--stride',
+    '-ns', '--no_stride',
     action='store_true',
     help="include stride in the architecture space, default is false"
     )
 parser.add_argument(
-    '-p', '--pooling',
+    '-np', '--no_pooling',
     action='store_true',
     help="include max pooling in the architecture space, default is false"
     )
 parser.add_argument(
     '-b', '--batch_size',
     type=int,
-    default=64,
+    default=128,
     help="the batch size used to train the child CNN, default is 64"
     )
 parser.add_argument(
@@ -111,13 +111,13 @@ parser.add_argument(
 args = parser.parse_args()
 
 
-if args.stride is False:
+if args.no_stride is True:
     if 'stride_height' in ARCH_SPACE:
         ARCH_SPACE.pop('stride_height')
     if 'stride_width' in ARCH_SPACE:
         ARCH_SPACE.pop('stride_width')
 
-if args.pooling is False:
+if args.no_pooling is True:
     if 'pool_size' in ARCH_SPACE:
         ARCH_SPACE.pop('pool_size')
 
@@ -145,8 +145,8 @@ def main():
         f'experiment',
         args.mode,
         'non_linear' if args.skip else 'linear',
-        ('with' if args.stride else 'without') + ' stride, ' +
-        ('with' if args.pooling else 'without') + ' pooling',
+        ('without' if args.no_stride else 'with') + ' stride, ' +
+        ('without' if args.no_pooling else 'with') + ' pooling',
         args.dataset + f"({args.layers} layers)"
         )
     if os.path.exists(dir) is False:
@@ -163,8 +163,8 @@ def nas(device, dir='experiment'):
     logger.info(f"mode: \t\t\t\t\t {'nas'}")
     logger.info(f"dataset: \t\t\t\t {args.dataset}")
     logger.info(f"number of child network layers: \t {args.layers}")
-    logger.info(f"include stride: \t\t\t {args.stride}")
-    logger.info(f"include pooling: \t\t\t {args.pooling}")
+    logger.info(f"include stride: \t\t\t {not args.no_stride}")
+    logger.info(f"include pooling: \t\t\t {not args.no_pooling}")
     logger.info(f"skip connection: \t\t\t {args.skip}")
     logger.info(f"training epochs: \t\t\t {args.epochs}")
     logger.info(f"data augmentation: \t\t\t {args.augment}")
@@ -236,8 +236,8 @@ def joint_search(device, dir='experiment'):
     logger.info(f"mode: \t\t\t\t\t {'joint'}")
     logger.info(f"dataset: \t\t\t\t {args.dataset}")
     logger.info(f"number of child network layers: \t {args.layers}")
-    logger.info(f"include stride: \t\t\t {args.stride}")
-    logger.info(f"include pooling: \t\t\t {args.pooling}")
+    logger.info(f"include stride: \t\t\t {not args.no_stride}")
+    logger.info(f"include pooling: \t\t\t {not args.no_pooling}")
     logger.info(f"skip connection: \t\t\t {args.skip}")
     logger.info(f"required # LUTs: \t\t\t {args.rLUT}")
     logger.info(f"required throughput: \t\t\t {args.rThroughput}")
@@ -327,8 +327,8 @@ def sync_search(device, dir='experiment'):
     logger.info(f"mode: \t\t\t\t\t {'sync'}")
     logger.info(f"dataset: \t\t\t\t {args.dataset}")
     logger.info(f"number of child network layers: \t {args.layers}")
-    logger.info(f"include stride: \t\t\t {args.stride}")
-    logger.info(f"include pooling: \t\t\t {args.pooling}")
+    logger.info(f"include stride: \t\t\t {not args.no_stride}")
+    logger.info(f"include pooling: \t\t\t {not args.no_pooling}")
     logger.info(f"skip connection: \t\t\t {args.skip}")
     logger.info(f"required # LUTs: \t\t\t {args.rLUT}")
     logger.info(f"required throughput: \t\t\t {args.rThroughput}")

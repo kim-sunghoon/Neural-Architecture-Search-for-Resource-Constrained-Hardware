@@ -194,6 +194,9 @@ def tune(paras=[], dataset='CIFAR10'):
         writer.writerow([str(epoch), train_acc, val_acc, quan_acc])
     print(f"Finished tuning ... final accuracy: {best_acc:6.3%}, " +
           f"quantized accuracy :{best_quan_acc:6.3%}")
+    para_num, para_size = compute_parameter_number(model.graph, quan_paras)
+    print(f"Total number of parameters: {para_num}")
+    print(f"Total parameter size: {para_size if para_size > 0 else 'N/A'}")
 
 
 def get_optimizer(type, model):
@@ -209,6 +212,18 @@ def get_optimizer(type, model):
         optimizer = optim.RMSprop(model.parameters(), lr=lr, weight_decay=1e-4)
         lr_schedule = lr_schedule_rms
     return optimizer, lr_schedule
+
+
+def compute_parameter_number(graph, quan_paras=None):
+    total_para_num = 0
+    total_para_size = 0
+    for cell in graph:
+        total_para_num += cell.para_num
+        if quan_paras is not None:
+            total_para_size += cell.para_num * (
+                quan_paras[cell.id]['weight_num_int_bits'] +
+                quan_paras[cell.id]['weight_num_frac_bits'])
+    return total_para_num, total_para_size
 
 
 if __name__ == '__main__':

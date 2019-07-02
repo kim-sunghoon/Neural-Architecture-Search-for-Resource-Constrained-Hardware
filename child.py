@@ -170,6 +170,8 @@ def build_graph(input_shape, arch_paras):
                     math.ceil(padding_height/2))
         cell.pool = nn.MaxPool2d(pool_size)
         cell.drop = nn.Dropout(p=drop_rates[cell.id])
+        cell.para_num = (in_channels * filter_height * filter_width + 1
+                         ) * num_filters
         graph.append(cell)
         cell_id += 1
         prev_output_shape = cell.output_shape
