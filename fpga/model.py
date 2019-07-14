@@ -18,10 +18,13 @@ def _get_hw_paras(arch_paras, quan_paras, input_shape=(3, 32, 32)):
             if 'stride_height' in arch_paras[l] else 1
         stride_width = arch_paras[l]['stride_width'] \
             if 'stride_width' in arch_paras[l] else 1
+        para_dict['N'] = \
+                output_channels[l-1] if l > 0 else input_channels
+        para_dict['R'] = output_height[l-1] if l > 0 else input_height
+        para_dict['C'] = output_width[l-1] if l > 0 else input_width
+        para_dict['Bii'] = hw_paras[l-1]['Boi'] if l > 0 else 1
+        para_dict['Bif'] = hw_paras[l-1]['Bof'] if l > 0 else 6
         if 'anchor_point' in arch_paras[l]:
-            para_dict['N'] = 0
-            para_dict['R'], para_dict['C'] = 0, 0
-            para_dict['Bii'], para_dict['Bif'] = 0, 0
             for i in range(len(arch_paras[l]['anchor_point'])):
                 para_dict['N'] += \
                     arch_paras[l]['anchor_point'][i] * output_channels[i]
@@ -29,29 +32,6 @@ def _get_hw_paras(arch_paras, quan_paras, input_shape=(3, 32, 32)):
                 para_dict['C'] = max(para_dict['C'], output_width[i])
                 para_dict['Bii'] = max(para_dict['Bii'], hw_paras[i]['Boi'])
                 para_dict['Bif'] = max(para_dict['Bif'], hw_paras[i]['Bof'])
-                if arch_paras[l]['anchor_point'][i] == 1:
-                    if_used[i] = True
-            if (l+1) == len(arch_paras):
-                for i in range(l):
-                    if if_used[i] is False:
-                        para_dict['N'] += output_channels[i]
-                        para_dict['R'] = max(para_dict['R'], output_height[i])
-                        para_dict['C'] = max(para_dict['C'], output_width[i])
-                        para_dict['Bii'] = max(para_dict['Bii'],
-                                               hw_paras[i]['Boi'])
-                        para_dict['Bif'] = max(para_dict['Bif'],
-                                               hw_paras[i]['Bof'])
-            if para_dict['N'] == 0:
-                para_dict['N'] = input_channels
-                para_dict['R'], para_dict['C'] = input_height, input_width
-                para_dict['Bii'],  para_dict['Bif'] = 1, 6
-        else:
-            para_dict['N'] = \
-                output_channels[l-1] if l > 0 else input_channels
-            para_dict['R'] = output_height[l-1] if l > 0 else input_height
-            para_dict['C'] = output_width[l-1] if l > 0 else input_width
-            para_dict['Bii'] = hw_paras[l-1]['Boi'] if l > 0 else 1
-            para_dict['Bif'] = hw_paras[l-1]['Bof'] if l > 0 else 6
         padding_height, out_height = compute_padding(
                         para_dict['R'], arch_paras[l]['filter_height'],
                         stride_height
@@ -327,27 +307,28 @@ class Partition(object):
 
 
 if __name__ == '__main__':
-    arch_paras = [
-        {'filter_height': 3, 'filter_width': 3, 'num_filters': 36,  # 0
-         'anchor_point': []},
-        {'filter_height': 3, 'filter_width': 3, 'num_filters': 48,  # 1
-         'anchor_point': [1]},
-        {'filter_height': 3, 'filter_width': 3, 'num_filters': 36,  # 2
-         'anchor_point': [1, 1]},
-        {'filter_height': 5, 'filter_width': 5, 'num_filters': 36,  # 3
-         'anchor_point': [1, 1, 1]},
-        {'filter_height': 3, 'filter_width': 7, 'num_filters': 48,  # 4
-         'anchor_point': [0, 0, 1, 0]},
-        {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 5
-         'anchor_point': [0, 0, 0, 0, 0]}]
+    # arch_paras = [
+    #     {'filter_height': 3, 'filter_width': 3, 'num_filters': 36,  # 0
+    #      'anchor_point': []},
+    #     {'filter_height': 3, 'filter_width': 3, 'num_filters': 48,  # 1
+    #      'anchor_point': []},
+    #     {'filter_height': 3, 'filter_width': 3, 'num_filters': 36,  # 2
+    #      'anchor_point': [1]},
+    #     {'filter_height': 5, 'filter_width': 5, 'num_filters': 36,  # 3
+    #      'anchor_point': [1, 1]},
+    #     {'filter_height': 3, 'filter_width': 7, 'num_filters': 48,  # 4
+    #      'anchor_point': [0, 0, 1]},
+    #     {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 5
+    #      'anchor_point': [0, 0, 0, 0]}]
 
-    quan_paras = [
-    {'act_num_int_bits': 5, 'act_num_frac_bits': 7, 'weight_num_int_bits': 2, 'weight_num_frac_bits': 7},
-    {'act_num_int_bits': 1, 'act_num_frac_bits': 3, 'weight_num_int_bits': 0, 'weight_num_frac_bits': 3},
-    {'act_num_int_bits': 3, 'act_num_frac_bits': 3, 'weight_num_int_bits': 5, 'weight_num_frac_bits': 7},
-    {'act_num_int_bits': 5, 'act_num_frac_bits': 0, 'weight_num_int_bits': 1, 'weight_num_frac_bits': 6},
-    {'act_num_int_bits': 5, 'act_num_frac_bits': 4, 'weight_num_int_bits': 1, 'weight_num_frac_bits': 4},
-    {'act_num_int_bits': 3, 'act_num_frac_bits': 3, 'weight_num_int_bits': 0, 'weight_num_frac_bits': 5}]
+    # quan_paras = [
+    # {'act_num_int_bits': 5, 'act_num_frac_bits': 7, 'weight_num_int_bits': 2, 'weight_num_frac_bits': 7},
+    # {'act_num_int_bits': 1, 'act_num_frac_bits': 3, 'weight_num_int_bits': 0, 'weight_num_frac_bits': 3},
+    # {'act_num_int_bits': 3, 'act_num_frac_bits': 3, 'weight_num_int_bits': 5, 'weight_num_frac_bits': 7},
+    # {'act_num_int_bits': 5, 'act_num_frac_bits': 0, 'weight_num_int_bits': 1, 'weight_num_frac_bits': 6},
+    # {'act_num_int_bits': 5, 'act_num_frac_bits': 4, 'weight_num_int_bits': 1, 'weight_num_frac_bits': 4},
+    # {'act_num_int_bits': 3, 'act_num_frac_bits': 3, 'weight_num_int_bits': 0, 'weight_num_frac_bits': 5}]
+    import utility
 
     # fpga_model = FPGAModel(
     #     arch_paras=arch_paras, quan_paras=quan_paras, rLUT=600000,
@@ -358,4 +339,32 @@ if __name__ == '__main__':
     #     print("there doesn't exist a model that satisfies the specifications")
     #     print(list(fpga_model.get_info()))
 
-    print(_get_hw_paras(arch_paras, quan_paras))
+    paras = [
+    {'anchor_point': [], 'filter_height': 5, 'filter_width': 7,
+     'num_filters': 24, 'pool_size': 2,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 6,
+     'weight_num_int_bits': 3, 'weight_num_frac_bits': 5},
+    {'anchor_point': [], 'filter_height': 3, 'filter_width': 5,
+     'num_filters': 64, 'pool_size': 2,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 5,
+     'weight_num_int_bits': 0, 'weight_num_frac_bits': 6},
+    {'anchor_point': [1], 'filter_height': 5, 'filter_width': 3,
+     'num_filters': 36, 'pool_size': 2,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 5,
+     'weight_num_int_bits': 3, 'weight_num_frac_bits': 5},
+    {'anchor_point': [1], 'filter_height': 7, 'filter_width': 7,
+     'num_filters': 48, 'pool_size': 1,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+     'weight_num_int_bits': 0, 'weight_num_frac_bits': 6},
+    {'anchor_point': [0, 0, 1], 'filter_height': 1, 'filter_width': 1,
+     'num_filters': 48, 'pool_size': 2,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 1,
+     'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+    {'anchor_point': [0, 1, 0, 1], 'filter_height': 1,
+     'filter_width': 1, 'num_filters': 36, 'pool_size': 1,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 4,
+     'weight_num_int_bits': 2, 'weight_num_frac_bits': 6}]
+    arch_paras, quan_paras = utility.split_paras(paras)
+
+    fpga_model = FPGAModel(300000, 1000, arch_paras, quan_paras)
+    print(fpga_model.get_info())

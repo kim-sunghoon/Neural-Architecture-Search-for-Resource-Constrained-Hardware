@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 
 
-def fit(model, optimizer, train_data=None, val_data=None, epochs=40,
+def fit(model, optimizer=None, train_data=None, val_data=None, epochs=40,
         verbosity=0, quan_paras=None, lr_schedule=None):
     acc = []
     loss = []

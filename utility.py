@@ -43,10 +43,16 @@ def split_paras(paras):
             quan_paras = None
     return arch_paras, quan_paras
 
+def join_paras(arch_paras, quan_paras):
+    paras = []
+    for a, q in zip(arch_paras, quan_paras):
+        paras.append(dict(a.items(), **q))
+    return paras
+
 
 def combine_rollout(arch_rollout, quan_rollout, num_layers):
-    arch_num_paras_per_layer = len(arch_rollout) / num_layers
-    quan_num_paras_per_layer = len(quan_rollout) / num_layers
+    arch_num_paras_per_layer = int(len(arch_rollout) / num_layers)
+    quan_num_paras_per_layer = int(len(quan_rollout) / num_layers)
     result = []
     for i in range(num_layers):
         result += arch_rollout[i * arch_num_paras_per_layer:
@@ -77,39 +83,75 @@ class BestSamples(object):
 
 
 if __name__ == '__main__':
-    paras = [
-        {'filter_height': 3, 'filter_width': 3, 'num_filters': 36,  # 0
-         'anchor_point': []},
-        {'filter_height': 3, 'filter_width': 3, 'num_filters': 48,  # 1
-         'anchor_point': [1]},
-        {'filter_height': 3, 'filter_width': 3, 'num_filters': 36,  # 2
-         'anchor_point': [1, 1]},
-        {'filter_height': 5, 'filter_width': 5, 'num_filters': 36,  # 3
-         'anchor_point': [1, 1, 1]},
-        {'filter_height': 3, 'filter_width': 7, 'num_filters': 48,  # 4
-         'anchor_point': [0, 0, 1, 1]},
-        {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 5
-         'anchor_point': [0, 1, 1, 1, 1]},
-        {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 6
-         'anchor_point': [0, 1, 1, 1, 1, 1]},
-        {'filter_height': 7, 'filter_width': 3, 'num_filters': 36,  # 7
-         'anchor_point': [1, 0, 0, 0, 0, 1, 1]},
-        {'filter_height': 7, 'filter_width': 1, 'num_filters': 36,  # 8
-         'anchor_point': [1, 0, 0, 0, 1, 1, 0, 1]},
-        {'filter_height': 7, 'filter_width': 7, 'num_filters': 36,  # 9
-         'anchor_point': [1, 0, 1, 1, 1, 1, 1, 1, 1]},
-        {'filter_height': 5, 'filter_width': 7, 'num_filters': 36,  # 10
-         'anchor_point': [1, 1, 0, 0, 1, 1, 1, 1, 1, 1]},
-        {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 11
-         'anchor_point': [1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1]},
-        {'filter_height': 7, 'filter_width': 5, 'num_filters': 48,  # 12
-         'anchor_point': [1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1]},
-        {'filter_height': 7, 'filter_width': 5, 'num_filters': 48,  # 13
-         'anchor_point': [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1]},
-        {'filter_height': 7, 'filter_width': 5, 'num_filters': 48,  # 14
-         'anchor_point': [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1]}]
-    arch_paras, quan_paras = split_paras(paras)
-    print(arch_paras)
-    print()
-    print(quan_paras)
+    # paras = [
+    #     {'filter_height': 3, 'filter_width': 3, 'num_filters': 36,  # 0
+    #      'anchor_point': []},
+    #     {'filter_height': 3, 'filter_width': 3, 'num_filters': 48,  # 1
+    #      'anchor_point': [1]},
+    #     {'filter_height': 3, 'filter_width': 3, 'num_filters': 36,  # 2
+    #      'anchor_point': [1, 1]},
+    #     {'filter_height': 5, 'filter_width': 5, 'num_filters': 36,  # 3
+    #      'anchor_point': [1, 1, 1]},
+    #     {'filter_height': 3, 'filter_width': 7, 'num_filters': 48,  # 4
+    #      'anchor_point': [0, 0, 1, 1]},
+    #     {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 5
+    #      'anchor_point': [0, 1, 1, 1, 1]},
+    #     {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 6
+    #      'anchor_point': [0, 1, 1, 1, 1, 1]},
+    #     {'filter_height': 7, 'filter_width': 3, 'num_filters': 36,  # 7
+    #      'anchor_point': [1, 0, 0, 0, 0, 1, 1]},
+    #     {'filter_height': 7, 'filter_width': 1, 'num_filters': 36,  # 8
+    #      'anchor_point': [1, 0, 0, 0, 1, 1, 0, 1]},
+    #     {'filter_height': 7, 'filter_width': 7, 'num_filters': 36,  # 9
+    #      'anchor_point': [1, 0, 1, 1, 1, 1, 1, 1, 1]},
+    #     {'filter_height': 5, 'filter_width': 7, 'num_filters': 36,  # 10
+    #      'anchor_point': [1, 1, 0, 0, 1, 1, 1, 1, 1, 1]},
+    #     {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 11
+    #      'anchor_point': [1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1]},
+    #     {'filter_height': 7, 'filter_width': 5, 'num_filters': 48,  # 12
+    #      'anchor_point': [1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1]},
+    #     {'filter_height': 7, 'filter_width': 5, 'num_filters': 48,  # 13
+    #      'anchor_point': [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1]},
+    #     {'filter_height': 7, 'filter_width': 5, 'num_filters': 48,  # 14
+    #      'anchor_point': [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1]}]
+    # arch_paras, quan_paras = split_paras(paras)
+    # print(arch_paras)
+    # print()
+    # print(quan_paras)
+    # arch_rollout = [3, 3, 0, 0, 0, 1, 2, 2, 1, 0, 2, 1, 2, 0, 1, 2, 2, 1, 3, 3, 1, 1, 3, 0, 1, 2, 0, 2, 0, 1, 3, 2, 2, 2, 1, 1]
+    # quan_rollout = [2, 1, 3, 4, 0, 0, 0, 6, 3, 2, 0, 4, 2, 4, 1, 2, 0, 2, 1, 1, 3, 6, 1, 2]
+    # combine_rollout(arch_rollout, quan_rollout, 6)
+    arch_paras = [
+    {'filter_height': 3, 'filter_width': 3,
+     'stride_height': 1, 'stride_width': 1,
+     'num_filters': 64, 'pool_size': 1},
+    {'filter_height': 7, 'filter_width': 5,
+     'stride_height': 1, 'stride_width': 1,
+     'num_filters': 48, 'pool_size': 1},
+    {'filter_height': 5, 'filter_width': 5,
+     'stride_height': 2, 'stride_width': 1,
+     'num_filters': 48, 'pool_size': 1},
+    {'filter_height': 3, 'filter_width': 5,
+     'stride_height': 1, 'stride_width': 1,
+     'num_filters': 64, 'pool_size': 1},
+    {'filter_height': 5, 'filter_width': 7,
+     'stride_height': 1, 'stride_width': 1,
+     'num_filters': 36, 'pool_size': 1},
+    {'filter_height': 3, 'filter_width': 1,
+     'stride_height': 1, 'stride_width': 2,
+     'num_filters': 64, 'pool_size': 2}]
+    quan_paras = [
+    {'act_num_int_bits': 1, 'act_num_frac_bits': 4,
+     'weight_num_int_bits': 3, 'weight_num_frac_bits': 5},
+    {'act_num_int_bits': 2, 'act_num_frac_bits': 1,
+     'weight_num_int_bits': 2, 'weight_num_frac_bits': 5},
+    {'act_num_int_bits': 1, 'act_num_frac_bits': 4,
+     'weight_num_int_bits': 2, 'weight_num_frac_bits': 4},
+    {'act_num_int_bits': 0, 'act_num_frac_bits': 6,
+     'weight_num_int_bits': 2, 'weight_num_frac_bits': 5},
+    {'act_num_int_bits': 3, 'act_num_frac_bits': 1,
+     'weight_num_int_bits': 0, 'weight_num_frac_bits': 5},
+    {'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 3}]
 
+    print(join_paras(arch_paras, quan_paras))

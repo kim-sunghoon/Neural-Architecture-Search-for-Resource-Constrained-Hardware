@@ -80,6 +80,8 @@ def lr_schedule_sgd(optimizer, epoch):
         new_lr = 0.001
     if epoch > 80:
         new_lr = 0.0003
+    if epoch > 120:
+        new_lr = 0.0001
     adjust_learning_rate(optimizer, new_lr)
     return new_lr
 
@@ -90,7 +92,6 @@ def adjust_learning_rate(optimizer, lr):
 
 
 def tune(paras=[], dataset='CIFAR10'):
-    # quantize = True if 'act_num_int_bits' in paras[0] else False
     arch_paras, quan_paras = utility.split_paras(paras)
     input_shape, num_classes = data.get_info(dataset)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
