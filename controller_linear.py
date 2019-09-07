@@ -5,8 +5,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 
-input_size = 35
-hidden_size = 35
+input_size = 1
+hidden_size = 1
 num_layers = 2
 
 
@@ -189,7 +189,7 @@ class Agent():
 if __name__ == '__main__':
     import torch
     import random
-    seed = 0
+    seed = 1
     torch.manual_seed(seed)
     random.seed(seed)
     from config import ARCH_SPACE, QUAN_SPACE

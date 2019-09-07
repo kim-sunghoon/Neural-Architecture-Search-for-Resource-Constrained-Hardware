@@ -18,33 +18,33 @@ NAS15 = [
     {'filter_height': 3, 'filter_width': 3, 'num_filters': 36,  # 0
      'anchor_point': []},
     {'filter_height': 3, 'filter_width': 3, 'num_filters': 48,  # 1
-     'anchor_point': [1]},
+     'anchor_point': []},
     {'filter_height': 3, 'filter_width': 3, 'num_filters': 36,  # 2
-     'anchor_point': [1, 1]},
+     'anchor_point': [1]},
     {'filter_height': 5, 'filter_width': 5, 'num_filters': 36,  # 3
-     'anchor_point': [1, 1, 1]},
+     'anchor_point': [1, 1]},
     {'filter_height': 3, 'filter_width': 7, 'num_filters': 48,  # 4
-     'anchor_point': [0, 0, 1, 1]},
+     'anchor_point': [0, 0, 1]},
     {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 5
-     'anchor_point': [0, 1, 1, 1, 1]},
+     'anchor_point': [0, 1, 1, 1]},
     {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 6
-     'anchor_point': [0, 1, 1, 1, 1, 1]},
+     'anchor_point': [0, 1, 1, 1, 1]},
     {'filter_height': 7, 'filter_width': 3, 'num_filters': 36,  # 7
-     'anchor_point': [1, 0, 0, 0, 0, 1, 1]},
+     'anchor_point': [1, 0, 0, 0, 0, 1]},
     {'filter_height': 7, 'filter_width': 1, 'num_filters': 36,  # 8
-     'anchor_point': [1, 0, 0, 0, 1, 1, 0, 1]},
+     'anchor_point': [1, 0, 0, 0, 1, 1, 0]},
     {'filter_height': 7, 'filter_width': 7, 'num_filters': 36,  # 9
-     'anchor_point': [1, 0, 1, 1, 1, 1, 1, 1, 1]},
+     'anchor_point': [1, 0, 1, 1, 1, 1, 1, 1]},
     {'filter_height': 5, 'filter_width': 7, 'num_filters': 36,  # 10
-     'anchor_point': [1, 1, 0, 0, 1, 1, 1, 1, 1, 1]},
+     'anchor_point': [1, 1, 0, 0, 1, 1, 1, 1, 1]},
     {'filter_height': 7, 'filter_width': 7, 'num_filters': 48,  # 11
-     'anchor_point': [1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1]},
+     'anchor_point': [1, 1, 1, 1, 0, 1, 0, 0, 0, 0]},
     {'filter_height': 7, 'filter_width': 5, 'num_filters': 48,  # 12
-     'anchor_point': [1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1]},
+     'anchor_point': [1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1]},
     {'filter_height': 7, 'filter_width': 5, 'num_filters': 48,  # 13
-     'anchor_point': [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1]},
+     'anchor_point': [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1]},
     {'filter_height': 7, 'filter_width': 5, 'num_filters': 48,  # 14
-     'anchor_point': [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1]}]
+     'anchor_point': [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1]}]
 
 # for layer in paras:
 #     layer['act_num_int_bits'] = 1
@@ -882,7 +882,83 @@ B2 = [
     {'filter_height': 5, 'filter_width': 3, 'num_filters': 64, 'pool_size': 1},
     {'filter_height': 7, 'filter_width': 7, 'num_filters': 64, 'pool_size': 1}]
 
+D = [
+    {'filter_height': 5, 'filter_width': 3,
+     'num_filters': 48, 'pool_size': 1,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 6,
+      'weight_num_int_bits': 2, 'weight_num_frac_bits': 6},
+    {'filter_height': 3, 'filter_width': 1,
+     'num_filters': 48, 'pool_size': 2,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 2,
+     'weight_num_int_bits': 2, 'weight_num_frac_bits': 5},
+    {'filter_height': 1, 'filter_width': 7,
+     'num_filters': 36, 'pool_size': 2,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 5,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 5},
+    {'filter_height': 7, 'filter_width': 3,
+     'num_filters': 36, 'pool_size': 1,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 1,
+     'weight_num_int_bits': 2, 'weight_num_frac_bits': 4},
+    {'filter_height': 5, 'filter_width': 5,
+     'num_filters': 24, 'pool_size': 1,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 3,
+     'weight_num_int_bits': 3, 'weight_num_frac_bits': 4},
+    {'filter_height': 1, 'filter_width': 1,
+     'num_filters': 24, 'pool_size': 1,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 5,
+     'weight_num_int_bits': 0, 'weight_num_frac_bits': 6}]
 
+E = [
+    {'filter_height': 5, 'filter_width': 1,
+     'num_filters': 48, 'pool_size': 1,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 2,
+     'weight_num_int_bits': 3, 'weight_num_frac_bits': 3},
+    {'filter_height': 5, 'filter_width': 3,
+     'num_filters': 48, 'pool_size': 2,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 1,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 5},
+    {'filter_height': 1, 'filter_width': 5,
+     'num_filters': 36, 'pool_size': 1,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 6,
+     'weight_num_int_bits': 3, 'weight_num_frac_bits': 4},
+    {'filter_height': 7, 'filter_width': 7,
+     'num_filters': 64, 'pool_size': 2,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 4,
+     'weight_num_int_bits': 2, 'weight_num_frac_bits': 6},
+    {'filter_height': 7, 'filter_width': 3,
+     'num_filters': 64, 'pool_size': 2,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 2,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 5},
+    {'filter_height': 5, 'filter_width': 3,
+     'num_filters': 48, 'pool_size': 1,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 4,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 4}]
+
+F = [
+    {'filter_height': 1, 'filter_width': 5,
+     'num_filters': 64, 'pool_size': 1,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 4,
+     'weight_num_int_bits': 3, 'weight_num_frac_bits': 4},
+    {'filter_height': 1, 'filter_width': 7,
+     'num_filters': 36, 'pool_size': 1,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 1,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 4},
+    {'filter_height': 5, 'filter_width': 7,
+     'num_filters': 64, 'pool_size': 2,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 5,
+     'weight_num_int_bits': 0, 'weight_num_frac_bits': 5},
+    {'filter_height': 5, 'filter_width': 3,
+     'num_filters': 48, 'pool_size': 2,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 4},
+    {'filter_height': 7, 'filter_width': 7,
+     'num_filters': 48, 'pool_size': 1,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 2,
+     'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+    {'filter_height': 1, 'filter_width': 5,
+     'num_filters': 36, 'pool_size': 1,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 4,
+     'weight_num_int_bits': 2, 'weight_num_frac_bits': 3}]
 # A2 30000/500
 # quan_paras = [
 #     {'act_num_int_bits': 2, 'act_num_frac_bits': 2,
@@ -973,18 +1049,224 @@ B2 = [
 #      'weight_num_int_bits': 2, 'weight_num_frac_bits': 6}]
 
 # B1 100000/500
-quan_paras = [
-    {'act_num_int_bits': 1, 'act_num_frac_bits': 4,
-     'weight_num_int_bits': 2, 'weight_num_frac_bits': 5},
-    {'act_num_int_bits': 3, 'act_num_frac_bits': 3,
-     'weight_num_int_bits': 1, 'weight_num_frac_bits': 6},
-    {'act_num_int_bits': 1, 'act_num_frac_bits': 2,
-     'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
-    {'act_num_int_bits': 3, 'act_num_frac_bits': 1,
-     'weight_num_int_bits': 3, 'weight_num_frac_bits': 5},
-    {'act_num_int_bits': 2, 'act_num_frac_bits': 1,
-     'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
-    {'act_num_int_bits': 2, 'act_num_frac_bits': 3,
-     'weight_num_int_bits': 3, 'weight_num_frac_bits': 6}]
+# quan_paras = [
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 4,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 1,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 1,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 6}]
 
-paras = utility.join_paras(B1, quan_paras)
+# B1 100000/1000
+# quan_paras = [
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 3},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 1,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 3},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 5} ,
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 6}]
+
+#B1 300000/500
+# quan_paras = [
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 5,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 4,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 5,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 5,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 6}]
+
+# B1 300000/1000
+# quan_paras = [
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 5,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 5,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 6, 'weight_num_int_bits': 1, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 0,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 4}]
+
+# B1 300000/2000
+# quan_paras = [
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 0,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 0,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 1,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 3},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 5}]
+
+# B2 30000/500
+# quan_paras = [
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 2},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 1},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 1,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 0},
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 2},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 1,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 0}]
+
+# B2 100000/500
+# quan_paras = [
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 1,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 5}]
+
+# B2 100000/1000
+# quan_paras = [
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 4,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 1,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 3},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 1,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 4}]
+
+# B2 300000/500
+# quan_paras = [
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 3, 'act_num_frac_bits': 4,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 6}]
+
+# B2 300000/1000
+# quan_paras = [
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 1,
+#      'weight_num_int_bits': 2, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 5} ,
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 5},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 4,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 3,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 5}]
+
+# B2 300000/2000
+# quan_paras = [
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 3},
+#     {'act_num_int_bits': 2, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 3, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 2,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 2},
+#     {'act_num_int_bits': 0, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 6},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+#     {'act_num_int_bits': 1, 'act_num_frac_bits': 6,
+#      'weight_num_int_bits': 1, 'weight_num_frac_bits': 6}]
+
+# paras = utility.join_paras(B2, quan_paras)
+joint_ns_300000_2000 = [
+    {'filter_height': 5, 'filter_width': 5, 'num_filters': 48, 'pool_size': 1,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 6,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 6},
+    {'filter_height': 3, 'filter_width': 3, 'num_filters': 48, 'pool_size': 2,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+     'weight_num_int_bits': 0, 'weight_num_frac_bits': 5},
+    {'filter_height': 3, 'filter_width': 1, 'num_filters': 48, 'pool_size': 1,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 1,
+     'weight_num_int_bits': 0, 'weight_num_frac_bits': 4},
+    {'filter_height': 1, 'filter_width': 3, 'num_filters': 36, 'pool_size': 1,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 5,
+      'weight_num_int_bits': 2, 'weight_num_frac_bits': 6},
+    {'filter_height': 1, 'filter_width': 1, 'num_filters': 64, 'pool_size': 1,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 6,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 3},
+    {'filter_height': 5, 'filter_width': 5, 'num_filters': 36, 'pool_size': 2,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 1,
+     'weight_num_int_bits': 0, 'weight_num_frac_bits': 5}]
+joint_ns_skip_300000_3000 = [
+    {'anchor_point': [],
+     'filter_height': 5, 'filter_width': 3, 'num_filters': 48, 'pool_size': 2,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 4,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 5},
+    {'anchor_point': [],
+     'filter_height': 1, 'filter_width': 3, 'num_filters': 24, 'pool_size': 2,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 0,
+     'weight_num_int_bits': 2, 'weight_num_frac_bits': 1},
+    {'anchor_point': [1],
+     'filter_height': 7, 'filter_width': 3, 'num_filters': 24, 'pool_size': 1,
+     'act_num_int_bits': 2, 'act_num_frac_bits': 2,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 4},
+    {'anchor_point': [1, 0],
+     'filter_height': 5, 'filter_width': 5, 'num_filters': 64, 'pool_size': 1,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 6,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 4},
+    {'anchor_point': [1, 0, 1],
+     'filter_height': 1, 'filter_width': 3, 'num_filters': 36, 'pool_size': 1,
+     'act_num_int_bits': 1, 'act_num_frac_bits': 6,
+     'weight_num_int_bits': 1, 'weight_num_frac_bits': 4},
+    {'anchor_point': [1, 1, 1, 1],
+     'filter_height': 1, 'filter_width': 1, 'num_filters': 48, 'pool_size': 2,
+     'act_num_int_bits': 3, 'act_num_frac_bits': 1,
+     'weight_num_int_bits': 3, 'weight_num_frac_bits': 6}]
+example = []
+cell = {
+    'filter_height': 3, 'filter_width': 3,
+    'num_filters': 8, 'pool_size': 1}
+for i in range(60):
+    example.append(cell)
+
+
+paras = example
+# for i in range(len(paras)):
+#     paras[i].pop('anchor_point')
+#     if i > 1:
+#         paras[i]['anchor_point'] = [1]

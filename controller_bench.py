@@ -62,7 +62,7 @@ def plot(reward_history):
 
 def controller_bench(space, num_layers, device=torch.device('cpu'), skip=True,
                      epochs=200):
-    lr = 0.2
+    lr = 2
     batch_size = 5
     max_epochs = epochs
     best_rollout = []

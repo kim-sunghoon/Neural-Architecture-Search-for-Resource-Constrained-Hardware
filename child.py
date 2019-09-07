@@ -11,8 +11,9 @@ import backend
 
 drop_rate = 0.2
 
-drop_rates = [0, 0.2, 0, 0.3, 0, 0.4, 0, 0, 0.5, 0, 0, 0.5, 0, 0, 0.5,
-              0, 0, 0.5]
+# drop_rates = [0, 0.2, 0, 0.3, 0, 0.4, 0, 0, 0.5, 0, 0, 0.5, 0, 0, 0.5,
+#               0, 0, 0.5]
+drop_rates = [0.3] * 1000
 
 
 class Cell():
@@ -227,6 +228,8 @@ class CNN(nn.Module):
             x = self.fc_bn(x)
         x = nn.Dropout(p=0.5)(x)
         x = self.fc2(x)
+        # for o in output:
+        #     print(o.size())
         return x
 
     def quantize_weight(self, num_int_bits, num_frac_bits):
@@ -370,9 +373,10 @@ if __name__ == '__main__':
     # graph = build_graph(input_shape, paras)
     # for cell in graph:
     #     print(cell)
+    x = torch.randn(1, *input_shape)
     arch_paras = [
         {'anchor_point': [], 'filter_height': 5, 'filter_width': 5,
-         'num_filters': 64, 'pool_size': 2,
+         'num_filters': 64, 'pool_size': 1,
          'act_num_int_bits': 2, 'act_num_frac_bits': 4,
          'weight_num_int_bits': 2, 'weight_num_frac_bits': 6},
         {'anchor_point': [], 'filter_height': 7, 'filter_width': 5,
@@ -387,7 +391,7 @@ if __name__ == '__main__':
          'num_filters': 48, 'pool_size': 2,
          'act_num_int_bits': 1, 'act_num_frac_bits': 3,
          'weight_num_int_bits': 3, 'weight_num_frac_bits': 6},
-        {'anchor_point': [1, 0, 1], 'filter_height': 1, 'filter_width': 1,
+        {'anchor_point': [0, 0, 0], 'filter_height': 3, 'filter_width': 1,
          'num_filters': 64, 'pool_size': 2,
          'act_num_int_bits': 2, 'act_num_frac_bits': 4,
          'weight_num_int_bits': 2, 'weight_num_frac_bits': 4},
@@ -397,7 +401,39 @@ if __name__ == '__main__':
          'weight_num_int_bits': 0, 'weight_num_frac_bits': 5}]
     model, optimizer = get_model(
                 input_shape, arch_paras, num_classes)
-    x = torch.randn(1, *input_shape)
+    print(model(x))
+    print(model.graph)
+
+    arch_paras = [
+        {'filter_height': 5, 'filter_width': 5,
+         'num_filters': 64, 'pool_size': 1,
+         'act_num_int_bits': 2, 'act_num_frac_bits': 4,
+         'weight_num_int_bits': 2, 'weight_num_frac_bits': 6},
+        {'filter_height': 7, 'filter_width': 5,
+         'num_filters': 36, 'pool_size': 2,
+         'act_num_int_bits': 2, 'act_num_frac_bits': 1,
+         'weight_num_int_bits': 1, 'weight_num_frac_bits': 5},
+        {'filter_height': 7, 'filter_width': 3,
+         'num_filters': 64, 'pool_size': 2,
+         'act_num_int_bits': 2, 'act_num_frac_bits': 5,
+         'weight_num_int_bits': 2, 'weight_num_frac_bits': 4},
+        {'filter_height': 1, 'filter_width': 7,
+         'num_filters': 48, 'pool_size': 2,
+         'act_num_int_bits': 1, 'act_num_frac_bits': 3,
+         'weight_num_int_bits': 3, 'weight_num_frac_bits': 6},
+        {'filter_height': 3, 'filter_width': 1,
+         'num_filters': 64, 'pool_size': 2,
+         'act_num_int_bits': 2, 'act_num_frac_bits': 4,
+         'weight_num_int_bits': 2, 'weight_num_frac_bits': 4},
+        {'filter_height': 1, 'filter_width': 1,
+         'num_filters': 24, 'pool_size': 2,
+         'act_num_int_bits': 2, 'act_num_frac_bits': 3,
+         'weight_num_int_bits': 0, 'weight_num_frac_bits': 5}]
+    model, optimizer = get_model(
+                input_shape, arch_paras, num_classes)
+    # x = torch.randn(1, *input_shape)
+    # model(x)
+    print(model(x))
     print(model.graph)
     # model = CNN(input_shape, paras, num_classes)
     # input = torch.randn(5, *input_shape)
