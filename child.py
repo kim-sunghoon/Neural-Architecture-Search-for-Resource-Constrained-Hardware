@@ -101,22 +101,6 @@ def build_graph(input_shape, arch_paras):
                         prev_output_shape[1])/2)
                     )
                 )
-        # else:
-        #     padding_height, out_height = compute_padding(
-        #                 in_height,
-        #                 filter_height,
-        #                 stride_height
-        #                 )
-        #     padding_width, out_width = compute_padding(
-        #                 in_width,
-        #                 filter_width,
-        #                 stride_width
-        #                 )
-        #     cell.conv_pad = [(
-        #             math.floor(padding_width/2),
-        #             math.ceil(padding_width/2),
-        #             math.floor(padding_height/2),
-        #             math.ceil(padding_height/2))]
         cell.in_channels = in_channels
         cell.conv = nn.Conv2d(
             cell.in_channels, num_filters,
