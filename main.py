@@ -5,7 +5,7 @@ import os
 import time
 
 import torch
-
+import numpy as np
 import child
 import data
 import backend
@@ -96,7 +96,7 @@ parser.add_argument(
 parser.add_argument(
     '-s', '--seed',
     type=int,
-    default=1,
+    default=0,
     help="seed for randomness, default is 0"
     )
 parser.add_argument(
@@ -124,7 +124,7 @@ parser.add_argument(
     '-v', '--verbosity',
     type=int,
     choices=range(3),
-    default=0,
+    default=1,
     help="verbosity level: 0 (default), 1 and 2 with 2 being the most verbose"
     )
 args = parser.parse_args()
@@ -164,9 +164,9 @@ def main():
         f'experiment',
         args.mode,
         'non_linear' if args.skip else 'linear',
-        ('without' if args.no_stride else 'with') + ' stride, ' +
-        ('without' if args.no_pooling else 'with') + ' pooling',
-        args.dataset + f"({args.layers} layers)"
+        ('without' if args.no_stride else 'with') + '-stride_' +
+        ('without' if args.no_pooling else 'with') + '-pooling',
+        args.dataset + f"({args.layers}-layers)"
         )
     if os.path.exists(dir) is False:
         os.makedirs(dir)
@@ -247,10 +247,10 @@ def nas(device, dir='experiment'):
 
 def sync_search(device, dir='experiment'):
     dir = os.path.join(
-        dir, f"rLut={args.rLUT}, rThroughput={args.rThroughput}")
+        dir, f"rLut={args.rLUT}_rThroughput={args.rThroughput}")
     if os.path.exists(dir) is False:
         os.makedirs(dir)
-    filepath = os.path.join(dir, f"joint ({args.episodes} episodes)")
+    filepath = os.path.join(dir, f"joint({args.episodes}-episodes)")
     logger = get_logger(filepath)
     csvfile = open(filepath+'.csv', mode='w+', newline='')
     writer = csv.writer(csvfile)
@@ -340,10 +340,10 @@ def sync_search(device, dir='experiment'):
 
 def nested_search(device, dir='experiment'):
     dir = os.path.join(
-        dir, f"rLut={args.rLUT}, rThroughput={args.rThroughput}")
+        dir, f"rLut={args.rLUT}_rThroughput={args.rThroughput}")
     if os.path.exists(dir) is False:
         os.makedirs(dir)
-    filepath = os.path.join(dir, f"nested ({args.episodes} episodes)")
+    filepath = os.path.join(dir, f"nested({args.episodes}-episodes)")
     logger = get_logger(filepath)
     csvfile = open(filepath+'.csv', mode='w+', newline='')
     writer = csv.writer(csvfile)
@@ -455,10 +455,10 @@ def nested_search(device, dir='experiment'):
 
 def quantization_search(device, dir='experiment'):
     dir = os.path.join(
-        dir, f"rLut={args.rLUT}, rThroughput={args.rThroughput}")
+        dir, f"rLut={args.rLUT}_rThroughput={args.rThroughput}")
     if os.path.exists(dir) is False:
         os.makedirs(dir)
-    filepath = os.path.join(dir, f"quantization ({args.episodes} episodes)")
+    filepath = os.path.join(dir, f"quantization({args.episodes}-episodes)")
     logger = get_logger(filepath)
     csvfile = open(filepath+'.csv', mode='w+', newline='')
     writer = csv.writer(csvfile)
@@ -620,6 +620,7 @@ SCRIPT = {
 if __name__ == '__main__':
     import random
     torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
     random.seed(args.seed)
     main()
 
