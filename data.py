@@ -79,6 +79,54 @@ def get_cifar10(shuffle=True, batch_size=64, augment=False):
     )
     return trainloader, valloader
 
+def get_cifar100(shuffle=True, batch_size=64, augment=False):
+    normalize = Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))
+    # normalize = Normalize(
+    #     (0.47359734773635864, 0.47359734773635864, 0.47359734773635864),
+    #     (0.2515689432621002, 0.2515689432621002, 0.2515689432621002))
+    # normalize = Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    if augment is True:
+        train_transform = transforms.Compose([
+            transforms.RandomAffine(10, translate=(0.07, 0.07)),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            normalize,
+            ])
+    else:
+        train_transform = transforms.Compose([
+            transforms.ToTensor(),
+            normalize,
+            ])
+    val_transform = transforms.Compose([
+        transforms.ToTensor(),
+        normalize,
+        ])
+    trainloader = DataLoader(
+        datasets.CIFAR100(
+            root='./data/CIFAR100',
+            train=True,
+            download=True,
+            transform=train_transform
+        ),
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=4,
+        # pin_memory=True
+    )
+    valloader = DataLoader(
+        datasets.CIFAR100(
+            root='./data/CIFAR100',
+            train=False,
+            download=True,
+            transform=val_transform
+        ),
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=4,
+        # pin_memory=True
+    )
+    return trainloader, valloader
+
 
 def get_imagenet(shuffle=True, batch_size=64, augment=False):
     normalize = transforms.Normalize(
@@ -107,7 +155,7 @@ def get_imagenet(shuffle=True, batch_size=64, augment=False):
     # train_transform = val_transform
     trainloader = DataLoader(
         datasets.ImageFolder(
-            root='/ImageNet/train',
+            root='../ImageNet/train',
             transform=train_transform
         ),
         batch_size=batch_size,
@@ -116,7 +164,7 @@ def get_imagenet(shuffle=True, batch_size=64, augment=False):
     )
     valloader = DataLoader(
         datasets.ImageFolder(
-            root='/ImageNet/val',
+            root='../ImageNet/val',
             transform=val_transform
         ),
         batch_size=batch_size,
@@ -149,7 +197,7 @@ def get_tiny_imagenet(shuffle=True, batch_size=64, augment=False):
     # train_transform = val_transform
     trainloader = DataLoader(
         datasets.ImageFolder(
-            root='./data/TinyImageNet/train',
+            root='../Tiny-ImageNet/train',
             transform=train_transform
         ),
         batch_size=batch_size,
@@ -158,7 +206,7 @@ def get_tiny_imagenet(shuffle=True, batch_size=64, augment=False):
     )
     valloader = DataLoader(
         datasets.ImageFolder(
-            root='./data/TinyImageNet/val',
+            root='../Tiny-ImageNet/val',
             transform=val_transform
         ),
         batch_size=batch_size,
@@ -178,6 +226,11 @@ DATA = {
         'generator': get_cifar10,
         'shape': (3, 32, 32),
         'num_classes': 10
+        },
+    'CIFAR100': {
+        'generator': get_cifar100,
+        'shape': (3, 32, 32),
+        'num_classes': 100
         },
     'ImageNet': {
         'generator': get_imagenet,
