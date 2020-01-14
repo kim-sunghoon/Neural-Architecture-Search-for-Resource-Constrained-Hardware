@@ -54,7 +54,7 @@ parser.add_argument(
 parser.add_argument(
     '-ep', '--episodes',
     type=int,
-    default=1000,
+    default=2000,
     help='''the number of episodes for training the policy network, default
         is 2000'''
     )
@@ -68,7 +68,7 @@ parser.add_argument(
 parser.add_argument(
     '-ep2', '--episodes2',
     type=int,
-    default=200,
+    default=500,
     help='''the number of episodes for training the quantization, default
         is 500'''
     )
@@ -166,7 +166,7 @@ def main():
         'non_linear' if args.skip else 'linear',
         ('without' if args.no_stride else 'with') + '-stride_' +
         ('without' if args.no_pooling else 'with') + '-pooling',
-        args.dataset + f"({args.layers}-layers)"
+        utility.cleanText(args.dataset + f"_{args.layers}-layers")
         )
     if os.path.exists(dir) is False:
         os.makedirs(dir)
@@ -174,7 +174,7 @@ def main():
 
 
 def nas(device, dir='experiment'):
-    filepath = os.path.join(dir, f"nas ({args.episodes} episodes)")
+    filepath = os.path.join(dir, utility.cleanText(f"nas_{args.episodes}-episodes"))
     logger = get_logger(filepath)
     csvfile = open(filepath+'.csv', mode='w+', newline='')
     writer = csv.writer(csvfile)
@@ -247,10 +247,10 @@ def nas(device, dir='experiment'):
 
 def sync_search(device, dir='experiment'):
     dir = os.path.join(
-        dir, f"rLut={args.rLUT}_rThroughput={args.rThroughput}")
+        dir, utility.cleanText(f"rLut-{args.rLUT}_rThroughput-{args.rThroughput}"))
     if os.path.exists(dir) is False:
         os.makedirs(dir)
-    filepath = os.path.join(dir, f"joint({args.episodes}-episodes)")
+    filepath = os.path.join(dir, utility.cleanText(f"joint_{args.episodes}-episodes"))
     logger = get_logger(filepath)
     csvfile = open(filepath+'.csv', mode='w+', newline='')
     writer = csv.writer(csvfile)
@@ -340,10 +340,10 @@ def sync_search(device, dir='experiment'):
 
 def nested_search(device, dir='experiment'):
     dir = os.path.join(
-        dir, f"rLut={args.rLUT}_rThroughput={args.rThroughput}")
+        dir, utility.cleanText(f"rLut-{args.rLUT}_rThroughput-{args.rThroughput}"))
     if os.path.exists(dir) is False:
         os.makedirs(dir)
-    filepath = os.path.join(dir, f"nested({args.episodes}-episodes)")
+    filepath = os.path.join(dir, utility.cleanText(f"nested_{args.episodes}-episodes"))
     logger = get_logger(filepath)
     csvfile = open(filepath+'.csv', mode='w+', newline='')
     writer = csv.writer(csvfile)
@@ -455,10 +455,10 @@ def nested_search(device, dir='experiment'):
 
 def quantization_search(device, dir='experiment'):
     dir = os.path.join(
-        dir, f"rLut={args.rLUT}_rThroughput={args.rThroughput}")
+        dir, utility.cleanText(f"rLut-{args.rLUT}_rThroughput-{args.rThroughput}"))
     if os.path.exists(dir) is False:
         os.makedirs(dir)
-    filepath = os.path.join(dir, f"quantization({args.episodes}-episodes)")
+    filepath = os.path.join(dir, utility.cleanText(f"quantization_{args.episodes}-episodes"))
     logger = get_logger(filepath)
     csvfile = open(filepath+'.csv', mode='w+', newline='')
     writer = csv.writer(csvfile)
