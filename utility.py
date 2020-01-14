@@ -1,6 +1,13 @@
 import logging
 from config import ARCH_SPACE, QUAN_SPACE
+import re
 
+def cleanText(readData):
+    """
+    get rid of special chacters in the text
+    """
+    text = re.sub('[=+,#/\?:^$.@*\"※~&%ㆍ!』\\‘|\(\)\[\]\<\>`\'…》]', '', readData)
+    return text
 
 def get_logger(filepath=None):
     logger = logging.getLogger(__name__)
