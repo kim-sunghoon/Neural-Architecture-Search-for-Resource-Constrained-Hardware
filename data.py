@@ -159,8 +159,9 @@ def get_imagenet(shuffle=True, batch_size=64, augment=False):
             transform=train_transform
         ),
         batch_size=batch_size,
-        shuffle=shuffle,
-        num_workers=4
+        shuffle=shuffle
+        #  shuffle=shuffle,
+        #  num_workers=4
     )
     valloader = DataLoader(
         datasets.ImageFolder(
@@ -168,8 +169,10 @@ def get_imagenet(shuffle=True, batch_size=64, augment=False):
             transform=val_transform
         ),
         batch_size=batch_size,
-        shuffle=shuffle,
-        num_workers=4
+        shuffle=False
+        #  num_workers=4
+        #  shuffle=shuffle,
+        #  num_workers=4
     )
     return trainloader, valloader
 

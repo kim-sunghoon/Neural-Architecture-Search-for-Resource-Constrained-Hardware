@@ -73,7 +73,7 @@ class SimpleNet(nn.Module):
 
 if __name__ == '__main__':
     import data
-    import backend_pytorch as backend
+    import backend
     import time
 
     dataset = 'CIFAR10'
