@@ -118,7 +118,7 @@ MULT_LUT[14][14] = 255;
 
 ADDER_LUT = [float('Nan')] * 100
 for i in range(len(ADDER_LUT)):
-	ADDER_LUT[i] = i
+    ADDER_LUT[i] = i
 
 num_layers = 8
 max_num_channels = max(ARCH_SPACE['num_filters'])
@@ -145,61 +145,61 @@ TRUNCATOR_LUT = np.zeros((max_num_int_bits+1, max_num_frac_bits+1, max_delta_num
 TRUNCATOR_LUT[3][2][1][0] = 3
 base = TRUNCATOR_LUT[3][2][1][0]
 for i in range(3, max_num_int_bits+1):
-	basei = base + (i-3)
-	for j in range(2, max_num_frac_bits+1):
-		basej = basei + (j-2)
-		for k in range(0, max_delta_num_int_bits+1):
-			basek = basej - (k > 1)
-			for l in range(0, max_delta_num_frac_bits+1):
-				# print(i, j, k, l)
-				TRUNCATOR_LUT[i][j][k][l] = basek - l
-				if k == i - 1 and l == j - 1:
-					TRUNCATOR_LUT[i][j][k][l] -= 1
+    basei = base + (i-3)
+    for j in range(2, max_num_frac_bits+1):
+        basej = basei + (j-2)
+        for k in range(0, max_delta_num_int_bits+1):
+            basek = basej - (k > 1)
+            for l in range(0, max_delta_num_frac_bits+1):
+                # print(i, j, k, l)
+                TRUNCATOR_LUT[i][j][k][l] = basek - l
+                if k == i - 1 and l == j - 1:
+                    TRUNCATOR_LUT[i][j][k][l] -= 1
 
 # LUT_PER_PROCESSOR = np.zeros((max_num_channels+1, max_num_channels+1, max_num_bits+1, max_num_bits+1))
 
 def compute_ce_size(Tn, Tm, Bii, Bif, Boi, Bof, Bwi, Bwf):
-	act_num_int_bits = Bii
-	act_num_frac_bits = Bif
-	weight_num_int_bits = Bwi
-	weight_num_frac_bits = Bwf
-	act_num_bits = act_num_int_bits + act_num_frac_bits
-	weight_num_bits = weight_num_int_bits + weight_num_frac_bits
-	# num_int_bits = max(act_num_int_bits, weight_num_int_bits)
-	# num_frac_bits = max(act_num_frac_bits, weight_num_frac_bits)
-	# print(Tn, Tm, Bi, Bo)
-	num_multipliers = Tn * Tm
-	# print(num_int_bits + num_frac_bits)
-	multiplier_LUT = MULT_LUT[act_num_int_bits][weight_num_bits] * num_multipliers
-	# num_frac_bits = Bi - num_int_bits
-	product_num_bits = act_num_bits + weight_num_bits
-	num_int_bits = act_num_int_bits + weight_num_int_bits
-	num_frac_bits = act_num_frac_bits + weight_num_frac_bits
-	num_products = Tn
-	adder_LUT = 0
-	while num_products > 1:
-		num_adders = math.floor(num_products/2)
-		adder_size = ADDER_LUT[num_frac_bits + num_int_bits]
-		adder_LUT += adder_size * num_adders * Tm
-		num_products = math.ceil(num_products/2)
-		num_int_bits += 1
-		# print("number of products: ", num_products)
-		# print("number of int bits: ", num_int_bits)
-	num_output_int_bits = Boi
-	num_output_frac_bits = Bof
-	num_int_bits = max(num_int_bits, num_output_int_bits)
-	num_frac_bits = max(num_frac_bits, num_output_frac_bits)
-	# print("number of int bits: ", num_int_bits)
-	# print("number of frac bits: ", num_frac_bits)
-	adder_size = ADDER_LUT[num_int_bits + num_frac_bits]
-	adder_LUT += adder_size * Tm
-	num_int_bits += 1
-	int_ = max(num_int_bits, num_output_int_bits)
-	delta_int_ = abs(num_int_bits - num_output_int_bits)
-	frac_ = max(num_frac_bits, num_output_frac_bits)
-	delta_frac_ = abs(num_frac_bits - num_output_frac_bits)
+    act_num_int_bits = Bii
+    act_num_frac_bits = Bif
+    weight_num_int_bits = Bwi
+    weight_num_frac_bits = Bwf
+    act_num_bits = act_num_int_bits + act_num_frac_bits
+    weight_num_bits = weight_num_int_bits + weight_num_frac_bits
+    # num_int_bits = max(act_num_int_bits, weight_num_int_bits)
+    # num_frac_bits = max(act_num_frac_bits, weight_num_frac_bits)
+    # print(Tn, Tm, Bi, Bo)
+    num_multipliers = Tn * Tm
+    # print(num_int_bits + num_frac_bits)
+    multiplier_LUT = MULT_LUT[act_num_int_bits][weight_num_bits] * num_multipliers
+    # num_frac_bits = Bi - num_int_bits
+    product_num_bits = act_num_bits + weight_num_bits
+    num_int_bits = act_num_int_bits + weight_num_int_bits
+    num_frac_bits = act_num_frac_bits + weight_num_frac_bits
+    num_products = Tn
+    adder_LUT = 0
+    while num_products > 1:
+        num_adders = math.floor(num_products/2)
+        adder_size = ADDER_LUT[num_frac_bits + num_int_bits]
+        adder_LUT += adder_size * num_adders * Tm
+        num_products = math.ceil(num_products/2)
+        num_int_bits += 1
+        # print("number of products: ", num_products)
+        # print("number of int bits: ", num_int_bits)
+    num_output_int_bits = Boi
+    num_output_frac_bits = Bof
+    num_int_bits = max(num_int_bits, num_output_int_bits)
+    num_frac_bits = max(num_frac_bits, num_output_frac_bits)
+    # print("number of int bits: ", num_int_bits)
+    # print("number of frac bits: ", num_frac_bits)
+    adder_size = ADDER_LUT[num_int_bits + num_frac_bits]
+    adder_LUT += adder_size * Tm
+    num_int_bits += 1
+    int_ = max(num_int_bits, num_output_int_bits)
+    delta_int_ = abs(num_int_bits - num_output_int_bits)
+    frac_ = max(num_frac_bits, num_output_frac_bits)
+    delta_frac_ = abs(num_frac_bits - num_output_frac_bits)
 
-	# print(frac_)
-	truncator_size = TRUNCATOR_LUT[int_, frac_, delta_int_, delta_frac_]
-	truncator_LUT = truncator_size * Tm
-	return multiplier_LUT + adder_LUT + truncator_LUT
+    # print(frac_)
+    truncator_size = TRUNCATOR_LUT[int_, frac_, delta_int_, delta_frac_]
+    truncator_LUT = truncator_size * Tm
+    return multiplier_LUT + adder_LUT + truncator_LUT
