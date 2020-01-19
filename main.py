@@ -5,18 +5,24 @@ import os
 import time
 
 import torch
+import torchsummary
+from tensorboardX import SummaryWriter
+
+from torchprofile import profile_macs
+
 import numpy as np
 import child
 import data
 import backend
 from controller import Agent
 from config import ARCH_SPACE, QUAN_SPACE, CLOCK_FREQUENCY
+from config import MEASURE_LATENCY_BATCH_SIZE, MEASURE_LATENCY_SAMPLE_TIMES, MIN_CONV_FEATURE_SIZE, MIN_FC_FEATRE_SIZE
 from utility import BestSamples
 from fpga.model import FPGAModel
 import utility
+import adapt_funcs as fns
 
 
-# def get_args():
 parser = argparse.ArgumentParser('Parser User Input Arguments')
 parser.add_argument(
     'mode',
@@ -54,16 +60,16 @@ parser.add_argument(
 parser.add_argument(
     '-ep', '--episodes',
     type=int,
-    default=2000,
+    default=1000,
     help='''the number of episodes for training the policy network, default
         is 2000'''
     )
 parser.add_argument(
     '-ep1', '--episodes1',
     type=int,
-    default=1000,
+    default=500,
     help='''the number of episodes for training the architecture, default
-        is 1000'''
+        is 500'''
     )
 parser.add_argument(
     '-ep2', '--episodes2',
@@ -90,7 +96,7 @@ parser.add_argument(
 parser.add_argument(
     '-b', '--batch_size',
     type=int,
-    default=128,
+    default=2048,
     help="the batch size used to train the child CNN, default is 128"
     )
 parser.add_argument(
@@ -114,6 +120,11 @@ parser.add_argument(
     '-a', '--augment',
     action='store_true',
     help="augment training data"
+    )
+parser.add_argument(
+    '-ad', '--adapt',
+    action='store_true',
+    help="calculate flops, num_param and latency"
     )
 parser.add_argument(
     '-m', '--multi-gpu',
@@ -166,11 +177,46 @@ def main():
         'non_linear' if args.skip else 'linear',
         ('without' if args.no_stride else 'with') + '-stride_' +
         ('without' if args.no_pooling else 'with') + '-pooling',
-        utility.cleanText(args.dataset + f"_{args.layers}-layers")
+        utility.cleanText(args.dataset + f"_{args.layers}-layers"),
+        ('with' if args.adapt else 'without') + '-macs_params_con'
         )
     if os.path.exists(dir) is False:
         os.makedirs(dir)
     SCRIPT[args.mode](device, dir)
+
+
+### MIT-Han lab profile code - torch.git.get_trace_graph error!!
+#  def get_net_macs(model, input_shape):
+#      ## change input shape (3,32,32) -> (1,3,32,32)
+#      input_size = list(input_shape)
+#      input_size.insert(0, 1)
+#      input_size = tuple(input_size)
+#      inputs = torch.randn(input_size).cuda()
+#      macs = profile_macs(model, inputs)
+#      return macs
+
+## netadapt - latency code
+#  def get_latency(network_def, lookup_table_path):
+    #  print('Building latency lookup table for',
+    #        torch.cuda.get_device_name())
+    #  if build_lookup_table:
+    #      fns.build_latency_lookup_table(network_def, lookup_table_path=lookup_table_path,
+    #          min_fc_feature_size=MIN_FC_FEATRE_SIZE,
+    #          min_conv_feature_size=MIN_CONV_FEATURE_SIZE,
+
+    #          measure_latency_batch_size=MEASURE_LATENCY_BATCH_SIZE,
+    #          measure_latency_sample_times=MEASURE_LATENCY_SAMPLE_TIMES,
+    #          verbose=True)
+    #  print('-------------------------------------------')
+    #  print('Finish building latency lookup table.')
+    #  print('    Device:', torch.cuda.get_device_name())
+    #  print('-------------------------------------------')
+    #
+    #  latency = fns.compute_resource(network_def, 'LATENCY', lookup_table_path)
+    #  print('Computed latency:     ', latency)
+    #  latency = fns.measure_latency(model,
+    #      [MEASURE_LATENCY_BATCH_SIZE, *INPUT_DATA_SHAPE])
+    #  print('Exact latency:        ', latency)
 
 
 def nas(device, dir='experiment'):
@@ -178,6 +224,7 @@ def nas(device, dir='experiment'):
     logger = get_logger(filepath)
     csvfile = open(filepath+'.csv', mode='w+', newline='')
     writer = csv.writer(csvfile)
+    tb_writer = SummaryWriter(filepath)
     logger.info(f"INFORMATION")
     logger.info(f"mode: \t\t\t\t\t {'nas'}")
     logger.info(f"dataset: \t\t\t\t {args.dataset}")
@@ -202,46 +249,106 @@ def nas(device, dir='experiment'):
         args.dataset, device, shuffle=True,
         batch_size=args.batch_size, augment=args.augment)
     input_shape, num_classes = data.get_info(args.dataset)
-    writer.writerow(["ID"] +
-                    ["Layer {}".format(i) for i in range(args.layers)] +
-                    ["Accuracy", "Time"]
-                    )
+
+    sample_input = utility.get_sample_input(device, input_shape)
+
+    ## write header
+    if args.adapt:
+        writer.writerow(["ID"] +
+                        ["Layer {}".format(i) for i in range(args.layers)] +
+                        ["Accuracy", "Time", "params", "macs", "reward"]
+                        )
+
+    else:
+        writer.writerow(["ID"] +
+                        ["Layer {}".format(i) for i in range(args.layers)] +
+                        ["Accuracy", "Time"]
+                        )
+
     arch_id, total_time = 0, 0
+    best_reward = float('-inf')
     logger.info('=' * 50 + "Start exploring architecture space" + '=' * 50)
     logger.info('-' * len("Start exploring architecture space"))
     best_samples = BestSamples(5)
+
     for e in range(args.episodes):
         arch_id += 1
         start = time.time()
         arch_rollout, arch_paras = agent.rollout()
         logger.info("Sample Architecture ID: {}, Sampled actions: {}".format(
                     arch_id, arch_rollout))
+        ## get model 
         model, optimizer = child.get_model(
             input_shape, arch_paras, num_classes, device,
             multi_gpu=args.multi_gpu, do_bn=True)
-        _, arch_reward = backend.fit(
+
+        if args.verbosity > 1:
+            print(model)
+            torchsummary.summary(model, input_shape)
+
+        if args.adapt:
+            num_w = utility.get_net_param(model)
+            network_def = fns.get_network_def_from_model(model, input_shape)
+            #  num_w2 = fns.compute_resource(network_def, 'WEIGHTS')
+            flops = fns.compute_resource(network_def, 'FLOPS')
+
+            tb_writer.add_scalar('num_param', num_w, arch_id)
+            tb_writer.add_scalar('macs', flops, arch_id)
+            if args.verbosity > 0:
+                print(f"# of param: {num_w}, flops: {flops}")
+
+        ## train model and get val_acc
+        _, val_acc = backend.fit(
             model, optimizer, train_data, val_data,
             epochs=args.epochs, verbosity=args.verbosity)
+
+        if args.adapt:
+            ## TODO: how to model arch_reward?? with num_w and flops?
+            arch_reward = val_acc
+        else:
+            arch_reward = val_acc
+
         agent.store_rollout(arch_rollout, arch_reward)
+
         end = time.time()
         ep_time = end - start
         total_time += ep_time
+
+        tb_writer.add_scalar('val_acc', val_acc, arch_id)
+        tb_writer.add_scalar('arch_reward', arch_reward, arch_id)
+
+        if arch_reward > best_reward:
+            best_reward = arch_reward
+            tb_writer.add_scalar('best_reward', best_reward, arch_id)
+            tb_writer.add_graph(model, (sample_input,), True)
+
         best_samples.register(arch_id, arch_rollout, arch_reward)
-        writer.writerow([arch_id] +
-                        [str(arch_paras[i]) for i in range(args.layers)] +
-                        [arch_reward] +
-                        [ep_time])
+        if args.adapt:
+            writer.writerow([arch_id] +
+                            [str(arch_paras[i]) for i in range(args.layers)] +
+                            [val_acc] +
+                            [ep_time] +
+                            [num_w] +
+                            [flops] +
+                            [arch_reward])
+        else:
+            writer.writerow([arch_id] +
+                            [str(arch_paras[i]) for i in range(args.layers)] +
+                            [val_acc] +
+                            [ep_time])
         logger.info(f"Architecture Reward: {arch_reward}, " +
                     f"Elasped time: {ep_time}, " +
                     f"Average time: {total_time/(e+1)}")
         logger.info(f"Best Reward: {best_samples.reward_list[0]}, " +
                     f"ID: {best_samples.id_list[0]}, " +
                     f"Rollout: {best_samples.rollout_list[0]}")
+
         logger.info('-' * len("Start exploring architecture space"))
     logger.info(
         '=' * 50 + "Architecture sapce exploration finished" + '=' * 50)
     logger.info(f"Total elasped time: {total_time}")
     logger.info(f"Best samples: {best_samples}")
+    tb_writer.close()
     csvfile.close()
 
 
