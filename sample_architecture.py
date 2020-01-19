@@ -81,8 +81,8 @@ SIMPLE = [
 if __name__ == '__main__':
     import torch
     import data
-    import child_pytorch as child
-    import backend_pytorch as backend
+    import child as child
+    import backend as backend
     import time
     torch.manual_seed(0)
 
