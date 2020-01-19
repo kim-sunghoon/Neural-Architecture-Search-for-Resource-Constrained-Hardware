@@ -10,7 +10,7 @@ def get_mnist(shuffle=True, batch_size=64, augment=False):
         transforms.ToTensor()])
     trainloader = DataLoader(
         datasets.MNIST(
-            root='./data/MNIST', train=True, download=True,
+            root='../MNIST', train=True, download=True,
             transform=mnist_transform
         ),
         batch_size=batch_size,
@@ -19,7 +19,7 @@ def get_mnist(shuffle=True, batch_size=64, augment=False):
     )
     valloader = DataLoader(
         datasets.MNIST(
-            root='./data/MNIST',
+            root='../MNIST',
             train=False,
             download=True,
             transform=mnist_transform
@@ -55,7 +55,7 @@ def get_cifar10(shuffle=True, batch_size=64, augment=False):
         ])
     trainloader = DataLoader(
         datasets.CIFAR10(
-            root='./data/CIFAR10',
+            root='../cifar10',
             train=True,
             download=True,
             transform=train_transform
@@ -67,7 +67,7 @@ def get_cifar10(shuffle=True, batch_size=64, augment=False):
     )
     valloader = DataLoader(
         datasets.CIFAR10(
-            root='./data/CIFAR10',
+            root='../cifar10',
             train=False,
             download=True,
             transform=val_transform
@@ -103,7 +103,7 @@ def get_cifar100(shuffle=True, batch_size=64, augment=False):
         ])
     trainloader = DataLoader(
         datasets.CIFAR100(
-            root='./data/CIFAR100',
+            root='../cifar100',
             train=True,
             download=True,
             transform=train_transform
@@ -115,7 +115,7 @@ def get_cifar100(shuffle=True, batch_size=64, augment=False):
     )
     valloader = DataLoader(
         datasets.CIFAR100(
-            root='./data/CIFAR100',
+            root='../cifar100',
             train=False,
             download=True,
             transform=val_transform
