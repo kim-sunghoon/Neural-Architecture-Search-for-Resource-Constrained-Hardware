@@ -1,6 +1,20 @@
 import logging
 from config import ARCH_SPACE, QUAN_SPACE
+import torch
 import re
+
+def get_sample_input(device, input_shape):
+    sample_input = list(input_shape)
+    sample_input.insert(0, 1)
+    sample_input = tuple(sample_input)
+    return torch.randn(sample_input).to(device)
+
+def get_net_param(model):
+    num_params = 0
+    for param in model.parameters():
+        num_params += param.numel()
+    #  print(f'Total number of parameters: {num_params}')
+    return num_params
 
 def cleanText(readData):
     """
