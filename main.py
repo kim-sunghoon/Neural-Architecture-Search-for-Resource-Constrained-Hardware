@@ -62,7 +62,7 @@ parser.add_argument(
     type=int,
     default=1000,
     help='''the number of episodes for training the policy network, default
-        is 2000'''
+        is 1000'''
     )
 parser.add_argument(
     '-ep1', '--episodes1',
@@ -242,14 +242,16 @@ def nas(device, dir='experiment'):
     logger.info(f"architecture space: ")
     for name, value in ARCH_SPACE.items():
         logger.info(name + f": \t\t\t\t {value}")
+
     agent = Agent(ARCH_SPACE, args.layers,
                   lr=args.learning_rate,
                   device=torch.device('cpu'), skip=args.skip)
     train_data, val_data = data.get_data(
         args.dataset, device, shuffle=True,
         batch_size=args.batch_size, augment=args.augment)
-    input_shape, num_classes = data.get_info(args.dataset)
 
+    input_shape, num_classes = data.get_info(args.dataset)
+    ## (3,32,32) -> (1,3,32,32) add batch dimension
     sample_input = utility.get_sample_input(device, input_shape)
 
     ## write header
@@ -294,7 +296,7 @@ def nas(device, dir='experiment'):
 
             tb_writer.add_scalar('num_param', num_w, arch_id)
             tb_writer.add_scalar('macs', flops, arch_id)
-            if args.verbosity > 0:
+            if args.verbosity > 1:
                 print(f"# of param: {num_w}, flops: {flops}")
 
         ## train model and get val_acc
@@ -320,7 +322,7 @@ def nas(device, dir='experiment'):
         if arch_reward > best_reward:
             best_reward = arch_reward
             tb_writer.add_scalar('best_reward', best_reward, arch_id)
-            tb_writer.add_graph(model, (sample_input,), True)
+            tb_writer.add_graph(model.eval(), (sample_input,))
 
         best_samples.register(arch_id, arch_rollout, arch_reward)
         if args.adapt:
@@ -729,5 +731,7 @@ if __name__ == '__main__':
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     random.seed(args.seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
     main()
 
