@@ -215,6 +215,7 @@ class Layer(object):
     def __init__(self, **paras):
         self.N = paras['N']
         self.M = paras['M']
+        ### TODO: why N is inserted ?? 
         self.R = paras['N']
         self.C = paras['C']
         self.Kw = paras['Kw']
