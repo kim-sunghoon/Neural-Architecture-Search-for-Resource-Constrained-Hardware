@@ -156,7 +156,7 @@ class CNN(nn.Module):
                 setattr(self, 'bn_{}'.format(cell.id), cell.bn)
         self.num_features = compute_num_features(self.graph[-1].output_shape)
         self.fc1 = nn.Linear(self.num_features, 256)
-        self.fc_bn = nn.BatchNorm1d(256)
+        #  self.fc_bn = nn.BatchNorm1d(256)
         self.fc2 = nn.Linear(256, num_classes)
 
     def forward(self, x, quan_paras=None):
@@ -208,8 +208,8 @@ class CNN(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc1(x)
         x = F.relu(x)
-        if self.do_bn is True:
-            x = self.fc_bn(x)
+        #  if self.do_bn is True:
+        #      x = self.fc_bn(x)
         x = nn.Dropout(p=0.5)(x)
         x = self.fc2(x)
         # for o in output:
@@ -346,6 +346,10 @@ if __name__ == '__main__':
     import controller_nl
     from config import ARCH_SPACE
     import random
+    from torch.autograd import Variable
+    from tensorboardX import SummaryWriter
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
     seed = 1
     random.seed(seed)
     torch.manual_seed(seed)
@@ -387,6 +391,10 @@ if __name__ == '__main__':
                 input_shape, arch_paras, num_classes)
     print(model(x))
     print(model.graph)
+    dummy_input = Variable(x)
+    with SummaryWriter(comment='with_anchor') as w:
+        w.add_graph(model.eval(), (dummy_input, ))
+    
 
     arch_paras = [
         {'filter_height': 5, 'filter_width': 5,
@@ -419,6 +427,8 @@ if __name__ == '__main__':
     # model(x)
     print(model(x))
     print(model.graph)
+    with SummaryWriter(comment='without_anchor') as w:
+        w.add_graph(model.eval(), (dummy_input, ))
     # model = CNN(input_shape, paras, num_classes)
     # input = torch.randn(5, *input_shape)
     # print(input.shape)
