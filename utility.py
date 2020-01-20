@@ -1,5 +1,6 @@
 import logging
 from config import ARCH_SPACE, QUAN_SPACE
+from torchprofile import profile_macs
 import torch
 import re
 
@@ -9,6 +10,34 @@ def get_sample_input(device, input_shape):
     #  sample_input = tuple(sample_input)
     return torch.randn(1, *input_shape).to(device)
     #  return torch.randn(1, *input_shape).to("cuda")
+
+### MIT-Han lab profile code 
+def get_net_macs(model, sample_input):
+    macs = profile_macs(model, sample_input)
+    return macs
+
+## netadapt - latency code
+#  def get_latency(network_def, lookup_table_path):
+    #  print('Building latency lookup table for',
+    #        torch.cuda.get_device_name())
+    #  if build_lookup_table:
+    #      fns.build_latency_lookup_table(network_def, lookup_table_path=lookup_table_path,
+    #          min_fc_feature_size=MIN_FC_FEATRE_SIZE,
+    #          min_conv_feature_size=MIN_CONV_FEATURE_SIZE,
+
+    #          measure_latency_batch_size=MEASURE_LATENCY_BATCH_SIZE,
+    #          measure_latency_sample_times=MEASURE_LATENCY_SAMPLE_TIMES,
+    #          verbose=True)
+    #  print('-------------------------------------------')
+    #  print('Finish building latency lookup table.')
+    #  print('    Device:', torch.cuda.get_device_name())
+    #  print('-------------------------------------------')
+    #
+    #  latency = fns.compute_resource(network_def, 'LATENCY', lookup_table_path)
+    #  print('Computed latency:     ', latency)
+    #  latency = fns.measure_latency(model,
+    #      [MEASURE_LATENCY_BATCH_SIZE, *INPUT_DATA_SHAPE])
+    #  print('Exact latency:        ', latency)
 
 def get_net_param(model):
     num_params = 0
